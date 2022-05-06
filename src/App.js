@@ -1,25 +1,83 @@
-import logo from './logo.svg';
+import {useState, useRef, useEffect} from 'react';
+import {flushSync} from 'react-dom';
 import './App.css';
 
-function App() {
+export default function CatFriends() {
+  const [index, setIndex] = useState(0);
+  const selectedRef = useRef(null);
+
+  const handleNextClick = ()=> {
+    flushSync(()=>{
+      if (index < catList.length - 1) {
+        setIndex(index + 1);
+      } else {
+        setIndex(0);
+      }
+    })
+    selectedRef.current.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'center'});
+  }
+
+  const handlePrevClick = ()=> {
+    flushSync(()=>{
+      if (index !== 0) {
+        setIndex(index - 1);
+      } else {
+        setIndex(catList.length-1);
+      }
+    })
+    selectedRef.current.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'center'});
+  }
+
+  useEffect(()=>{
+    const id = setInterval(handleNextClick,2000);
+    return ()=> {
+      clearInterval(id);
+    }
+  },[handleNextClick]);
+
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+      <>
+        <h1>Cattos</h1>
+        <nav>
+          <button className='button left-button' onClick={handleNextClick}>
+            >
+          </button>
+          <button className='button right-button' onClick={handlePrevClick}>
+            &#60;
+          </button>
+        </nav>
+        <div className='view-port'>
+            <div className='container'>
+              {catList.map((cat, i) => (
+                  <div className='container-item' ref={index===i ? selectedRef : null} key={cat.id}>
+                    <img
+                        className={
+                          index === i ? 'active' : ''
+                        }
+                        src={cat.imageUrl}
+                        alt={'Cat #' + cat.id}
+                    />
+                  </div>
+              ))}
+            </div>
+          </div>
+      </>
   );
 }
 
-export default App;
+const catList = [];
+for (let i = 0; i < 12; i++) {
+  catList.push({
+    id: i,
+    imageUrl: 'https://placekitten.com/250/200?image=' + i
+  });
+
+}
+
